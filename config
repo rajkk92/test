@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Config
+clusters:
+- name: "test-cluster"
+  cluster:
+    server: "https://10.10.1.4:8443/k8s/clusters/c-nw94q"
+    certificate-authority-data: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpVENDQ\
+      VM2Z0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQTdNUnd3R2dZRFZRUUtFeE5rZVc1aGJXbGoKY\
+      kdsemRHVnVaWEl0YjNKbk1Sc3dHUVlEVlFRREV4SmtlVzVoYldsamJHbHpkR1Z1WlhJdFkyRXdIa\
+      GNOTWpFdwpPREF6TURVek9UVXhXaGNOTXpFd09EQXhNRFV6T1RVeFdqQTdNUnd3R2dZRFZRUUtFe\
+      E5rZVc1aGJXbGpiR2x6CmRHVnVaWEl0YjNKbk1Sc3dHUVlEVlFRREV4SmtlVzVoYldsamJHbHpkR\
+      1Z1WlhJdFkyRXdXVEFUQmdjcWhrak8KUFFJQkJnZ3Foa2pPUFFNQkJ3TkNBQVN6RCt3dlNDZDlLb\
+      nduc0xTSnVVdStTV3dUTDBUbTVBc0JrUVlPQzdyYwpHUXNuTG9DczBOSmpORWt1dTk5UXcvTE84S\
+      GpCcUV5dTlTaGJTdDZVejlyS295TXdJVEFPQmdOVkhROEJBZjhFCkJBTUNBcVF3RHdZRFZSMFRBU\
+      UgvQkFVd0F3RUIvekFLQmdncWhrak9QUVFEQWdOSkFEQkdBaUVBOGRxUEcrcnIKdjBDZG1HSXFLb\
+      1p2UE1RTFNUVWs1Nk4vT3NINUxiYkdoenNDSVFETGNlVjR3cVNJZytmcDJCTzBZZ0FyRyswbgpFV\
+      U9xcjVWZGJYajlidk42UWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t"
+- name: "test-cluster-Test-Cluster"
+  cluster:
+    server: "https://10.10.1.8:6443"
+    certificate-authority-data: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN3akNDQ\
+      WFxZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFTTVJBd0RnWURWUVFERXdkcmRXSmwKT\
+      FdOaE1CNFhEVEl4TVRBeU9ERXlNRGN6T1ZvWERUTXhNVEF5TmpFeU1EY3pPVm93RWpFUU1BNEdBM\
+      VVFQXhNSAphM1ZpWlMxallUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ\
+      0VCQU5iZkp2SGQva0dmCk5wV0NpcVhlOFNnZlc2VEh6MHI0Z3ArcXlGbVlweVJJK0ZaWlZlVkdJd\
+      0daOUt2MHZENjdvaU1BOGVodkxvcDQKY3V3VWlWYnB1WldUTjFQTEErN0ZMNlRqZTNZazd4eW5Rc\
+      kkwNktSTC92eTZQNTRyTk0rb25GMUVpRWNBbm4xdgpKOHlZY0tsWUxRL09seXo2eXA3bmV1KzNpR\
+      nNXR3BLMzV1VHN2ZkQ0T1ZNNmdiaThJZVZWMmx0a2VCNFZ5d2dXCmsvTzdzRk1INXVGZ2ZNaHJyT\
+      2xwYy9INVdxekhHSGJZd0YxUmpVdnpURHl0cWloZ0NZSFhCc21VcytrYkZ6YncKRDgzY3FaUytVa\
+      XpkWFlSNW5aNGRjR2cvRVlXMTBHd3Y1RGMrOG9Sb3Nqd2xzeURpdFhucWVWOTlVMXBrSWtCOApHR\
+      VBOZVFMam9ROENBd0VBQWFNak1DRXdEZ1lEVlIwUEFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93U\
+      UZNQU1CCkFmOHdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBS0duekQyZ21INXZUM2V4WEFKQW9lb\
+      UNVSFF3cThKRENDZ2UKMzFaM01WZHhjK0UvSnZsOGdEck50c3RaZ3NOM2YyaUJPaUl3cE90V1hPK\
+      2cvNys3NWhlNnZzdmhQTEdUT0tCZApvd0Q2WW9YUjc3TGMyZDRMR0t2M1d2cW5uRE5haXBwemtBT\
+      3FQbDk5c3YvK2tnMllkQTlQWDNVOEZjS3NkMXhNCnlGVzFoV0RBSVY4WXpoVFF3ditkNTJDVDJ4S\
+      TBlS3ZxS1RMMCtubWUrTjgrMFpNY2k3cVVsVE9VNzFrTytNRGQKM0IzOFlTanYxN0tIZ0l0Nkd0U\
+      nYvSTNQMDhFRU45bXkrZEpzQUFEb09VRmtoZm9iWTBPZ1habGsxdWZ3eitZeApWSE0vaEJ4cXNSN\
+      2QxMk9pOS9xbjlhQTNrNFhpWVpWOVg1a3V4YWNjTU9TbHV2WHhYL1k9Ci0tLS0tRU5EIENFUlRJR\
+      klDQVRFLS0tLS0K"
+
+users:
+- name: "test-cluster"
+  user:
+    token: "kubeconfig-user-f9rbc.c-nw94q:bpsb525c258n2pd9lwvp9rc8ldqn4jf5zg9z4x4wpdvhmmpqnd7vqn"
+
+
+contexts:
+- name: "test-cluster"
+  context:
+    user: "test-cluster"
+    cluster: "test-cluster"
+- name: "test-cluster-Test-Cluster"
+  context:
+    user: "test-cluster"
+    cluster: "test-cluster-Test-Cluster"
+
+current-context: "test-cluster"
