@@ -1,0 +1,135 @@
+def clustername = params.ClusterName
+def GIT_URL = params.Git_URL
+def projectname = params.ProjectName
+def reponame = params.RepoName
+def saname = params.ServiceAccount
+def sanamepasswd = params.ServiceAccountPasswd
+def annotation_name = params.Annotation_Name
+def annotation_project = params.ProjectID
+def annotation_tenant = params.Annotation_tenant
+def annotation_wildcard = params.Annotation_wildcard
+def email_flag = params.Email
+def recipientList = params.Recipient_List
+currentBuild.result = "SUCCESS"
+node("si0vmc4065") {
+    try {
+	    stage('Adding radium-dummyapp folder') {
+			sh """#!/bin/bash
+			rm -rf nginxtestapp.git
+			git clone --bare ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/nginxtestapp.git
+			cd nginxtestapp.git
+			git remote add radium-dummyapp ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git
+			git push --all radium-dummyapp
+			git clone ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git
+			cd radium_${reponame}
+			cd radium-dummyapp/templates
+			kubectl create secret docker-registry msrcred --docker-server=bcr-de01.inside.bosch.cloud --docker-username=${saname} --docker-password=${sanamepasswd} -n ${projectname}-nginxtestapp --dry-run=client -o yaml > secret.yaml
+			cd ../..
+			git add .
+			git commit -m "initial commit"
+			git push 
+			"""
+		}
+		stage('Add ssh key to new_repo') {
+			sh """#!/bin/bash
+			ssh-keygen -t rsa -f ${saname} -P "" -C ${saname}@bosch.com
+			privatekey=`cat ${saname}.pub`
+			curl -v -u poorfe:MzE0NTc3MDYyNDgxOkxKwKat9e+3uFGD+50gXcPwNOb6 -X POST  \
+			-H "Content-Type: application/json" \
+			-d '{\"key\": {\"text\": "'\"\$privatekey\"'", \"label\": "'\"${saname}\"'" }, \"permission\": \"REPO_WRITE\" }' \
+			https://sourcecode.socialcoding.bosch.com/rest/keys/1.0/projects/RADIUM/repos/radium_${reponame}/ssh
+			"""
+		}
+		stage('Login to ArgoCD') {
+			sh """#!/bin/bash
+			password=`kubectl --kubeconfig /local/home/rbadmin_app2/vpr1cob/kube-prabu/${clustername}.yaml -n argo-${projectname} get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
+			argocd login argo-${projectname}.${annotation_wildcard} --grpc-web --username admin --password \$password
+			"""
+		}
+		stage('Connect repository to ArgoCD') {
+			sh """#!/bin/bash
+			function repocreate() {
+				argocd repo add ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git --name ${projectname}-dummyapp --insecure-skip-server-verification --ssh-private-key-path ${saname}
+			}
+			repocreate && sleep 10
+			argocd repo list | grep ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git > /dev/null
+			repostatus=`echo \$?`
+			if [ \$repostatus == 0 ] 
+			then
+				argocd repo get ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git | grep Successful > /dev/null
+				repostatus=`echo \$?`
+				if [ \$repostatus == 0 ]
+				then
+					echo "Repository is connected successfully"
+				else 
+					echo "Removing repository & connecting again"
+					argocd repo rm ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git
+					repocreate
+				fi
+			else
+			    echo "Adding repository"
+				repocreate
+			fi
+			"""
+		}
+		stage('Deploy application to ArgoCD') {
+			sh """#!/bin/bash
+			function appcreate() {
+				argocd app create ${projectname}-dummyapp \
+				--repo ssh://git@sourcecode.socialcoding.bosch.com:7999/radium/radium_${reponame}.git \
+				--path radium-dummyapp --dest-server https://kubernetes.default.svc \
+				--helm-set-string annotation.name=${annotation_name} \
+				--helm-set-string annotation.project=${annotation_project} \
+				--helm-set-string annotation.tenant=${annotation_tenant} \
+				--helm-set-string annotation.wildcard=${annotation_wildcard} \
+				--helm-set-string namespace.name=${projectname}-nginxtestapp
+				argocd app sync ${projectname}-dummyapp
+			}
+			argocd app list | grep ${projectname}-dummyapp > /dev/null
+			appstatus=`echo \$?`
+			if [ \$appstatus == 0 ]
+			then
+				argocd app get ${projectname}-dummyapp | grep Healthy > /dev/null
+				appstatus=`echo \$?`
+				if [ \$appstatus == 0 ]
+				then
+				    echo "Redeploying the application"
+					argocd app delete ${projectname}-dummyapp -y && sleep 30
+					appcreate
+				else
+				    echo "Deleting the application and deploying"
+					argocd app delete ${projectname}-dummyapp -y && sleep 30
+					appcreate
+				fi
+			else
+			    echo "Deploying application"
+				appcreate	
+			fi
+			"""
+		}
+	}
+	catch(caughtError) {
+
+        currentBuild.result = 'FAILURE'
+        println "****** Error occured ****** ----> " + caughtError
+
+        }
+	if(email_flag){
+		stage('Send Email') {
+            emailSending('$BUILD_STATUS!!', "ArgoCD test Application", recipientList)
+        }
+    }
+}
+def emailSending(def status, def info_string, def recipientList){
+    def content = '''<body style="background-color:lightgrey;">
+    <h1>Build ${BUILD_DISPLAY_NAME} is ${BUILD_STATUS}</h1>
+    <a href="${PROJECT_URL}/${BUILD_NUMBER}">Build page</a>
+    <a href="${JOB_URL}/${BUILD_NUMBER}/changes">Changes Since Last Build</a><br>
+	Info: '''
+    emailext body:  content + info_string,
+            mimeType: 'text/html',
+            replyTo: '$DEFAULT_REPLYTO',
+            subject: status + '$JOB_NAME - Build $BUILD_DISPLAY_NAME',
+			from: 'Serviceline.BMLP-ApplicationIntegraiton@bcn.bosch.com',
+            to: recipientList
+}
